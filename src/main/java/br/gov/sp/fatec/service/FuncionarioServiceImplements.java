@@ -1,7 +1,6 @@
 package br.gov.sp.fatec.service;
 
 import java.util.ArrayList;
-import java.util.Set;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -16,57 +15,85 @@ import br.gov.sp.fatec.repository.FuncionarioRepository;
 
 
 @Service("funcionarioService")
-public class FuncionarioServiceImplements implements FuncionarioService{
+public class FuncionarioServiceImplements implements FuncionarioService {
 
-	
 	@Autowired
 	private FuncionarioRepository funcRepo;
 	
 	@Autowired
-	private ServicoRepository servRepo;
+	private DependenteRepository depenRepo;
 	
 	@Autowired
-	private DependenteRepository depenRepo;
+	private ServicoRepository servRepo;
 
 	
-	public void setDependenteRepo(DependenteRepository depenRepo) {
-		this.depenRepo = depenRepo;
+	public ServicoRepository getServRepo() {
+		return servRepo;
 	}
-	
-	
-	public void setFuncionarioRepo(FuncionarioRepository funcRepo) {
-		this.funcRepo = funcRepo;
-	}
-	
-	public void setServicoRepo(ServicoRepository servRepo) {
+
+	public void setServRepo(ServicoRepository servRepo) {
 		this.servRepo = servRepo;
 	}
 
-	
-	@Override
-	@Transactional
-	public Funcionario incluirFuncionario(String nome, int cpf, String nomeServico, String nomeDependente) {
-		Servico servico = servRepo.findByNome(nomeServico);
-		
-		if(servico == null) {
-			servico = new Servico();
-			servico.setNomeServico(nomeServico);
-			servRepo.save(servico);
-		}
-		Funcionario func = new Funcionario();
-		Dependente dep = new Dependente();
-		func.setNome(nome);
-		func.setCpf(cpf);
-		func.setServico((Set<Servico>) new ArrayList<Servico>());
-		func.getServico().add(servico);
-		func.setDependente((Set<Dependente>)new ArrayList<Dependente>());
-		func.getDependente().add(dep);
-		funcRepo.save(func);
-		return func;
-		
+	public FuncionarioRepository getFuncRepo() {
+		return funcRepo;
 	}
 
-	
+	public void setFuncRepo(FuncionarioRepository funcRepo) {
+		this.funcRepo = funcRepo;
+	}
 
+	public DependenteRepository getDepenRepo() {
+		return depenRepo;
+	}
+
+	public void setDepenRepo(DependenteRepository depenRepo) {
+		this.depenRepo = depenRepo;
+	}
+
+	@Transactional
+	public Funcionario incluirFuncionario(String nome, int Cpf, String nomeServico) {
+		try {
+			Servico serv = servRepo.findByNome(nomeServico);		
+			Funcionario func = new Funcionario();
+			func.setNome(nome);
+			func.setCpf(Cpf);
+			func.setDependentes(new ArrayList<Dependente>());
+			func.setServico(serv);
+			funcRepo.save(func);
+			return func;
+			
+		} catch (Exception e) {
+			System.out.println("chave unica duplicada");
+			return null;
+		}
+		
+	}
+	
+	
+	@Transactional
+	public Dependente incluirDependente(String nome, String nomeFunc) {
+		Dependente dep = new Dependente();
+		Funcionario func = new Funcionario();
+		dep.setNome(nome);
+		func = funcRepo.findByNome(nomeFunc);
+		if (func == null) {
+			return null;
+		}
+		dep.setFuncionario(func);
+		depenRepo.save(dep);
+		
+		return dep;
+	}
+	
+	@Transactional
+	public Servico incluirServico(String nome) {
+	
+		Servico serv = new Servico();
+		serv.setNome(nome);
+		serv.setFuncionarios(new ArrayList<Funcionario>());
+		servRepo.save(serv);
+		return serv;
+	}
 	
 }

@@ -5,7 +5,7 @@ import org.springframework.data.repository.CrudRepository;
 import br.gov.sp.fatec.model.Servico;
 
 public interface ServicoRepository extends CrudRepository<Servico, Long>{
-	
-	public Servico findByNome(String nomeServico);
-	
+
+	public Servico findByNome(String nome);
+
 }
